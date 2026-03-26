@@ -17,6 +17,8 @@ public final class Overtime extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        getServer().getPluginManager().registerEvents(new CombatListener(this), this);
+
         getLogger().info("Overtime running!");
         new BukkitRunnable() {
             @Override
@@ -25,10 +27,13 @@ public final class Overtime extends JavaPlugin {
                 for (Player player : Bukkit.getOnlinePlayers()) {
                     UUID id = player.getUniqueId();
 
-                    int secondsLeft = playerTime.getOrDefault(id, 300); // 300s = 5m
+                    int secondsLeft = getTime(id) - 1;
+                    setTime(id, secondsLeft);
 
-                    secondsLeft--;
-                    playerTime.put(id, secondsLeft);
+                    if (secondsLeft <= 0) {
+                        player.setHealth(player.getHealth() - 1); // -0.5 heart every second in negatives, + wither effect
+                        player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 1));
+                    }
 
                     updateTimeInterface(player, secondsLeft);
                 }
@@ -49,6 +54,14 @@ public final class Overtime extends JavaPlugin {
         }
 
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(decidedChatColor + timeFormatted + " left"));
+    }
+
+    public int getTime(UUID playerId) {
+        return playerTime.getOrDefault(playerId, 300);
+    }
+
+    public void setTime(UUID playerId, int time) {
+        playerTime.put(playerId, time);
     }
 
     @Override
