@@ -2,3 +2,8 @@ name: Overtime
 version: '1.0-SNAPSHOT'
 main: dev.vivaan.jeffmod.overtime.Overtime
 api-version: '1.21'
+commands:
+  start:
+    description: Starts the Overtime game.
+  reset:
+    description: Resets all times and stops the game.
