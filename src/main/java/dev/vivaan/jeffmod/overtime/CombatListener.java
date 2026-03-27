@@ -17,6 +17,11 @@ public class CombatListener implements Listener{
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker) {
+
+            if (!plugin.isGameRunning() || !plugin.isInGame(victim.getUniqueId()) || !plugin.isPlayerInGame(attacker.getUniqueId())) {
+                return;
+            }
+
             double damage = event.getDamage();
             int timeToTake = (int) (damage / 2); // 1 heart = 1 second
             
