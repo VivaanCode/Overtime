@@ -55,6 +55,8 @@ public class CombatListener implements Listener{
             }
         }
 
+        plugin.removePlayer(victim.getUniqueId());
+        victim.setGameMode(org.bukkit.GameMode.SPECTATOR);
         victim.sendMessage(ChatColor.RED + "You have been killed. You may watch in spectator mode, until the host runs /reset.");
     }
 }
