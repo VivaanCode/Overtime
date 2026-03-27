@@ -83,6 +83,8 @@ public final class Overtime extends JavaPlugin {
                     if (playersInGame.size() == 1) {
                         UUID winnerId = playersInGame.iterator().next();
                         Player winner = Bukkit.getPlayer(winnerId);
+                        if (winner == null) return;
+
                         String winnerName = winner.getName();
                         Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + winnerName + " IS THE WINNER!");
 
@@ -250,7 +252,8 @@ public final class Overtime extends JavaPlugin {
     public void removePlayer(UUID playerId) {
         playersInGame.remove(playerId);
         playerTime.remove(playerId);
-        Bukkit.getPlayer(playerId).setGlowing(false);
+        Player p = Bukkit.getPlayer(playerId);
+        if (p != null) p.setGlowing(false);
     }
 
     public boolean isInGame(UUID playerId) {
