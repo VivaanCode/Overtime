@@ -34,20 +34,27 @@ public final class Overtime extends JavaPlugin {
         getCommand("reset").setExecutor(this);
 
         getServer().getPluginManager().registerEvents(new CombatListener(this), this);
-        getServer().getPluginManager().registerEvents(new GameListener(this), this);
+        //getServer().getPluginManager().registerEvents(new GameListener(this), this);
 
         getLogger().info("Overtime running!");
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!gameRunning) {
-                    return;
-                }
+                    if (!gameRunning) {
+                        return;
+                    }
 
-                for (UUID id : new HashSet<>(playersInGame)) {
-                    Player player = Bukkit.getPlayer(id);
-                    if (player == null || !player.isOnline()) {
-                        playersInGame.remove(id);
+                    for (UUID id : new HashSet<>(playersInGame)) {
+                        Player player = Bukkit.getPlayer(id);
+                        if (player == null || !player.isOnline()) {
+                            playersInGame.remove(id);
+                            continue;
+                        }
+
+                    if (player.getGameMode() != GameMode.SURVIVAL) {
+                        removePlayer(id);
+                        player.setGlowing(false);
+                        player.sendMessage(ChatColor.RED + "You left Survival mode and have been removed from the game.");
                         continue;
                     }
 
