@@ -4,16 +4,23 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
+import org.bukkit.GameMode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
 
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 
 public final class Overtime extends JavaPlugin {
 
@@ -28,12 +35,14 @@ public final class Overtime extends JavaPlugin {
         ScoreboardManager manager = Bukkit.getScoreboardManager();
         scoreboard = manager.getNewScoreboard();
         objective = scoreboard.registerNewObjective("overtime", "dummy", ChatColor.GOLD + "OVERTIME");
+
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         getCommand("start").setExecutor(this);
         getCommand("reset").setExecutor(this);
 
         getServer().getPluginManager().registerEvents(new CombatListener(this), this);
+        getServer().getPluginManager().registerEvents(new PotionListener(this), this);
         //getServer().getPluginManager().registerEvents(new GameListener(this), this);
 
         getLogger().info("Overtime running!");
@@ -47,7 +56,10 @@ public final class Overtime extends JavaPlugin {
                     for (UUID id : new HashSet<>(playersInGame)) {
                         Player player = Bukkit.getPlayer(id);
                         if (player == null || !player.isOnline()) {
-                            playersInGame.remove(id);
+                            removePlayer(id);
+                            if (!player.isOp()) {
+                                player.setGameMode(GameMode.SPECTATOR);
+                            }
                             continue;
                         }
 
@@ -67,6 +79,21 @@ public final class Overtime extends JavaPlugin {
                     }
 
                     updateTimeInterface(player, secondsLeft);
+
+                    if (playersInGame.size() == 1) {
+                        UUID winnerId = playersInGame.iterator().next();
+                        Player winner = Bukkit.getPlayer(winnerId);
+                        String winnerName = winner.getName();
+                        Bukkit.broadcastMessage(ChatColor.GOLD + "" + ChatColor.BOLD + winnerName + " IS THE WINNER!");
+
+                        for (Player player2 : Bukkit.getOnlinePlayers()) {
+                            player2.sendTitle(ChatColor.GOLD + winnerName, "is the winner!", 10, 70, 20);
+                            player2.setGlowing(false);
+                        }
+
+                        gameRunning = false;
+                        playersInGame.clear();
+                    }
                 }
                 updateLeaderboard();
             }
@@ -80,6 +107,14 @@ public final class Overtime extends JavaPlugin {
         }
 
         if (label.equalsIgnoreCase("start")) {
+            long count = Bukkit.getOnlinePlayers().stream()
+                    .filter(p -> p.getGameMode() == GameMode.SURVIVAL).count();
+
+            if (count < 2) {
+                sender.sendMessage(ChatColor.RED + "You need at least 2 players in Survival to start.");
+                return true;
+            }
+
             gameRunning = true;
             playersInGame.clear();
             playerTime.clear();
@@ -92,7 +127,8 @@ public final class Overtime extends JavaPlugin {
             }
 
             Bukkit.broadcastMessage(ChatColor.YELLOW + "" + ChatColor.BOLD + "THE CLOCK HAS STARTED. YOU HAVE 2 MINUTES TO GATHER RESOURCES BEFORE PVP IS ENABLED.");
-            Bukkit.broadcastMessage(ChatColor.RED + ChatColor.ITALIC + "If you leave the server, you will be removed from the game.");
+            Bukkit.broadcastMessage(ChatColor.RED + "" + ChatColor.ITALIC + "If you leave the server, you will be removed from the game.");
+            Bukkit.broadcastMessage(ChatColor.GREEN + "How to play: Deal damage and kill players to gain more time. Whoever lives the longest wins.");
             return true;
         }
 
@@ -105,6 +141,26 @@ public final class Overtime extends JavaPlugin {
             }
 
             Bukkit.broadcastMessage(ChatColor.GREEN + "The game has been reset.");
+            return true;
+        }
+
+        if (label.equalsIgnoreCase("givepotion")) {
+            if (!(sender instanceof Player player)) return true;
+
+            ItemStack potion = new ItemStack(org.bukkit.Material.POTION);
+            org.bukkit.inventory.meta.PotionMeta meta = (org.bukkit.inventory.meta.PotionMeta) potion.getItemMeta();
+
+            meta.setDisplayName(ChatColor.GREEN + "Potion of Time");
+            java.util.List<String> lore = new java.util.ArrayList<>();
+            lore.add(ChatColor.GRAY + "Adds 1 minute of time");
+            lore.add(ChatColor.RED + "Capped at 5 minutes!");
+            meta.setLore(lore);
+
+            meta.setColor(org.bukkit.Color.LIME);
+            potion.setItemMeta(meta);
+
+            player.getInventory().addItem(potion);
+            player.sendMessage(ChatColor.GREEN + "You received a Potion of Time.");
             return true;
         }
 
@@ -194,6 +250,7 @@ public final class Overtime extends JavaPlugin {
     public void removePlayer(UUID playerId) {
         playersInGame.remove(playerId);
         playerTime.remove(playerId);
+        Bukkit.getPlayer(playerId).setGlowing(false);
     }
 
     public boolean isInGame(UUID playerId) {

@@ -7,3 +7,5 @@ commands:
     description: Starts the Overtime game.
   reset:
     description: Resets all times and stops the game.
+  givepotion:
+    description: Gives the admin a Potion of Time

@@ -18,7 +18,7 @@ public class CombatListener implements Listener{
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker) {
 
-            if (!plugin.isGameRunning() || !plugin.isInGame(victim.getUniqueId()) || !plugin.isPlayerInGame(attacker.getUniqueId())) {
+            if (!plugin.isGameRunning() || !plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
                 return;
             }
 
