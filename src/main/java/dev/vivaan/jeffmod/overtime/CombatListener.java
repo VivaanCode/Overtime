@@ -18,7 +18,24 @@ public class CombatListener implements Listener{
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker) {
 
-            if (!plugin.isGameRunning() || !plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
+            if (!plugin.isGameRunning()) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (!plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
+                return;
+            }
+
+            if (plugin.isGracePeriod()) {
+                event.setCancelled(true);
+                attacker.sendMessage(ChatColor.RED + "PvP is disabled for the first 2 minutes!");
+                return;
+            }
+
+            if (plugin.isGracePeriod()) {
+                event.setCancelled(true);
+                attacker.sendMessage(ChatColor.RED + "PVP is disabled for the first 2 minutes!");
                 return;
             }
 
@@ -40,6 +57,7 @@ public class CombatListener implements Listener{
     @EventHandler
     public void onKill(PlayerDeathEvent event) {
         Player victim = event.getEntity();
+        if (!plugin.isGameRunning() || !plugin.isInGame(victim.getUniqueId())) return;
         Player attacker = victim.getKiller();
 
         if (attacker != null) {

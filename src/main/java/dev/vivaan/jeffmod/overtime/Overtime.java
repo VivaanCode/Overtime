@@ -30,6 +30,7 @@ public final class Overtime extends JavaPlugin implements Listener {
     private boolean gameRunning = false;
     private Scoreboard scoreboard;
     private Objective objective;
+    private int gracePeriod = 0;
 
     @Override
     public void onEnable() {
@@ -53,6 +54,16 @@ public final class Overtime extends JavaPlugin implements Listener {
             public void run() {
                     if (!gameRunning) {
                         return;
+                    }
+
+                    if (gracePeriod > 0) {
+                        gracePeriod--;
+                        if (gracePeriod == 0) {
+                            Bukkit.broadcastMessage(ChatColor.DARK_RED + "" + ChatColor.BOLD + "PVP IS NOW ENABLED!");
+                            for (Player p : Bukkit.getOnlinePlayers()) {
+                                p.sendTitle("GRACE PERIOD OVER", "PVP is now enabled.", 10, 70, 10);
+                            }
+                        }
                     }
 
                     for (UUID id : new HashSet<>(playersInGame)) {
@@ -121,6 +132,7 @@ public final class Overtime extends JavaPlugin implements Listener {
             }
 
             gameRunning = true;
+            gracePeriod = 120;
             playersInGame.clear();
             playerTime.clear();
 
@@ -294,7 +306,7 @@ public final class Overtime extends JavaPlugin implements Listener {
 
         if (!gameRunning && !event.getPlayer().isOp()) {
             event.setCancelled(true);
-            event.getPlayer().teleport(new Location(world, 206, 79, 106));
+            //event.getPlayer().teleport(new Location(world, 206, 79, 106));
         }
     }
 
@@ -304,8 +316,12 @@ public final class Overtime extends JavaPlugin implements Listener {
 
         if (!gameRunning && !event.getPlayer().isOp()) {
             event.setCancelled(true);
-            event.getPlayer().teleport(new Location(world, 206, 79, 106));
+            //event.getPlayer().teleport(new Location(world, 206, 79, 106));
         }
+    }
+
+    public boolean isGracePeriod() {
+        return gracePeriod >= 0;
     }
 
 
