@@ -321,7 +321,7 @@ public final class Overtime extends JavaPlugin implements Listener {
     }
 
     public boolean isGracePeriod() {
-        return gracePeriod >= 0;
+        return gracePeriod > 0;
     }
 
 
