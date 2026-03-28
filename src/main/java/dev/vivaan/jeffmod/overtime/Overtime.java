@@ -70,11 +70,8 @@ public final class Overtime extends JavaPlugin implements Listener {
                         Player player = Bukkit.getPlayer(id);
                         if (player == null || !player.isOnline()) {
                             removePlayer(id);
-                            if (!player.isOp()) {
-                                player.setGameMode(GameMode.SPECTATOR);
-                            }
                             continue;
-                        }
+                    }
 
                     if (player.getGameMode() != GameMode.SURVIVAL) {
                         removePlayer(id);
