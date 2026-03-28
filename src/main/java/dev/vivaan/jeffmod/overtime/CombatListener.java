@@ -16,54 +16,46 @@ public class CombatListener implements Listener{
 
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
-        if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker) {
+        if (!(event.getEntity() instanceof Player victim)) return;
 
+        Player attacker = null;
 
-            if (!plugin.isGameRunning()) {
-                event.setCancelled(true);
-                return;
+        if (event.getDamager() instanceof Player p) {
+            attacker = p;
+        } else if (event.getDamager() instanceof org.bukkit.entity.Projectile proj) {
+            if (proj.getShooter() instanceof Player p) {
+                attacker = p;
             }
-
-            if (event.getDamager() instanceof org.bukkit.entity.Projectile proj) {
-                if (proj.getShooter() instanceof Player p) {
-                    attacker = p;
-                }
-            }
-
-            if (!plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
-                event.setCancelled(true);
-                return;
-            }
-
-            if (!plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
-                return;
-            }
-
-            if (plugin.isGracePeriod()) {
-                event.setCancelled(true);
-                attacker.sendMessage(ChatColor.RED + "PvP is disabled for the first 2 minutes!");
-                return;
-            }
-
-            if (plugin.isGracePeriod()) {
-                event.setCancelled(true);
-                attacker.sendMessage(ChatColor.RED + "PVP is disabled for the first 2 minutes!");
-                return;
-            }
-
-            double damage = event.getDamage();
-            int timeToTake = (int) (damage / 2); // 1 heart = 1 second
-            
-            if (timeToTake < 1) {
-                return;
-            }
-
-            int victimTime = plugin.getTime(victim.getUniqueId());
-            int attackerTime = plugin.getTime(attacker.getUniqueId());
-
-            plugin.setTime(victim.getUniqueId(), victimTime - timeToTake);
-            plugin.setTime(attacker.getUniqueId(), Math.min(attackerTime + timeToTake, 300));
         }
+
+        if (attacker == null) return;
+
+        if (!plugin.isGameRunning()) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (!plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
+            event.setCancelled(true);
+            return;
+        }
+
+        if (plugin.isGracePeriod()) {
+            event.setCancelled(true);
+            attacker.sendMessage(ChatColor.RED + "PVP is disabled for the first 2 minutes!");
+            return;
+        }
+
+        double damage = event.getDamage();
+        int timeToTake = (int) (damage / 2); // 1 heart = 1 second
+
+        if (timeToTake < 1) return;
+
+        int victimTime = plugin.getTime(victim.getUniqueId());
+        int attackerTime = plugin.getTime(attacker.getUniqueId());
+
+        plugin.setTime(victim.getUniqueId(), victimTime - timeToTake);
+        plugin.setTime(attacker.getUniqueId(), Math.min(attackerTime + timeToTake, 300));
     }
 
     @EventHandler
