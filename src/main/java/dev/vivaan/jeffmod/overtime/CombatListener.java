@@ -18,7 +18,19 @@ public class CombatListener implements Listener{
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         if (event.getEntity() instanceof Player victim && event.getDamager() instanceof Player attacker) {
 
+
             if (!plugin.isGameRunning()) {
+                event.setCancelled(true);
+                return;
+            }
+
+            if (event.getDamager() instanceof org.bukkit.entity.Projectile proj) {
+                if (proj.getShooter() instanceof Player p) {
+                    attacker = p;
+                }
+            }
+
+            if (!plugin.isInGame(victim.getUniqueId()) || !plugin.isInGame(attacker.getUniqueId())) {
                 event.setCancelled(true);
                 return;
             }
