@@ -86,7 +86,7 @@ public final class Overtime extends JavaPlugin implements Listener {
                     int secondsLeft = getTime(id) - 1;
                     setTime(id, secondsLeft);
 
-                    if (secondsLeft <= 0) {
+                    if (secondsLeft < 0) {
                         player.setHealth(Math.max(0, player.getHealth() - 1)); // -0.5 heart every second in negatives, + wither effect
                         player.addPotionEffect(new PotionEffect(PotionEffectType.WITHER, 40, 1));
                     }
